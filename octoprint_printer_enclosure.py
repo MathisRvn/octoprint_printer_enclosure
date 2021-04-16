@@ -59,15 +59,15 @@ fan_out = GPIO.PWM(FAN_PIN_OUT,PWM_FREQ)
 fan_out.start(0)
 
 GPIO.setup(PIN_RED, GPIO.OUT, initial=GPIO.LOW)
-red_led = GPIO.PWM(FAN_PIN_OUT,PWM_FREQ)
+red_led = GPIO.PWM(PIN_RED,PWM_FREQ)
 red_led.start(0)
 
 GPIO.setup(PIN_GREEN, GPIO.OUT, initial=GPIO.LOW)
-green_led = GPIO.PWM(FAN_PIN_OUT,PWM_FREQ)
+green_led = GPIO.PWM(PIN_GREEN,PWM_FREQ)
 green_led.start(0)
 
 GPIO.setup(PIN_BLUE, GPIO.OUT, initial=GPIO.LOW)
-blue_led = GPIO.PWM(FAN_PIN_OUT,PWM_FREQ)
+blue_led = GPIO.PWM(PIN_BLUE,PWM_FREQ)
 blue_led.start(0)
 
 
