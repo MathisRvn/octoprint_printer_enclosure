@@ -45,6 +45,8 @@ temperature_sensor = Adafruit_DHT.DHT11 # Setting up dht11 sensor
 
 # Setting up all pwm output : 2 for the fans and 3 for the 3 colors of the leds
 
+PWM_FREQ = 25
+
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
