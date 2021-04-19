@@ -11,6 +11,12 @@ import signal
 import sys
 import os
 import RPi.GPIO as GPIO
+import datetime
+
+
+from pathlib import Path
+dir_path = str(Path(__file__).parent.resolve())
+
 
 # PIN configuration
 
@@ -77,6 +83,7 @@ blue_led.start(0)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(DOOR_PIN,GPIO.IN)
 
+
 def readDht11():
     try:
         (humidity, temperature) = Adafruit_DHT.read_retry(temperature_sensor, DHT11_PIN)
@@ -87,14 +94,17 @@ def readDht11():
     except Exception:
         return (0, 0)
 
+
 def setLeds(color):
     red_led.ChangeDutyCycle(color[0])
     green_led.ChangeDutyCycle(color[1])
     blue_led.ChangeDutyCycle(color[2])
 
+
 def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
     fan_out.ChangeDutyCycle(speed)
+
 
 def request(path, json = {}, method='get'): # To send a get request
 
@@ -108,16 +118,17 @@ def request(path, json = {}, method='get'): # To send a get request
         resp = requests.post(url, headers=headers, json=json)
 
     if resp.status_code == 200:
-        print(resp.json())
         return resp.json()
     else:
         return None
+
 
 def door_open(): # return true or false
     if GPIO.input(DOOR_PIN):
         return False
     else:
         return True
+
 
 def get_status(): # get information from octoprint and return { operational, paused, printing, cancelling, pausing, error, ready }
     r = request('printer')
@@ -133,6 +144,13 @@ def setAirfanUsingTemperature (temperature):
     else:
         setAirFan(AIR_FAN_MIN)
 
+def error (err):
+    (temperature, humidity) = readDht11()
+    txt = str(datetime.datetime.now()) + '     ' + str(temperature) + '°C      Door opened ? ' + door_open() + '     error : ' + err
+    print(txt)
+    f = open(dir_path + '/log.txt', 'a')
+    f.write(txt+"\n")
+    f.close()
 
 def main ():
 
@@ -147,24 +165,27 @@ def main ():
 
             (temperature, humidity) = readDht11()
             status = get_status()
+            door_status = door_open()
+
+            print("temperature : " + temperature + '°C    door : ' + door_status)
 
             if temperature == 0:
-                print("Error : cannot connect to DHT11")
+                error("Error : cannot connect to DHT11")
                 setLeds(error_color)
 
             elif status == None or status["operational"] != True:
-                print("Error : cannot connect to Octoprint")
+                error("Error : cannot connect to Octoprint")
                 setLeds(error_color)
 
             elif temperature > max_temperature:
-                print("Error: max temperature reached")
+                error("Error: max temperature reached")
                 setLeds(error_color)
                 setAirFan(AIR_FAN_MAX)
                 request("job", json = {"command": "pause", "action": "pause"}, method='post')
 
             else:
 
-                if door_open():
+                if door_status:
                     setAirfanUsingTemperature (temperature)
                     setLeds(open_color)
 
@@ -173,7 +194,7 @@ def main ():
                     setLeds(starting_color)
 
                 elif status["cancelling"] == True or status["error"] == True:
-                    print("Problem with the printer : status = cancelling ou status == error")
+                    error("Problem with the printer : status = cancelling ou status == error")
                     setAirFan(AIR_FAN_MAX)
                     setLeds(error_color)
 
