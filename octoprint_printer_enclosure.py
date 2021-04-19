@@ -109,7 +109,7 @@ def request(path, params = {}): # To send a get request
 def stop_all_operations():
     setAirFan(100)
     setLeds(error_color)
-    request("job", params = {"command": "pause"})
+    request("job", params = {"command": "pause", "action": "pause"})
     print("ALL OPERATION STOPPED")
 
 def door_open(): # return true or false
