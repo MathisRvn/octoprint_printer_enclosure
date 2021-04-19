@@ -96,10 +96,10 @@ def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
     fan_out.ChangeDutyCycle(speed)
 
-def request(path): # To send a get request
+def request(path, params = {): # To send a get request
     url = BASE_URL + 'api/' + path
     headers = {'X-Api-Key': API_KEY}
-    resp = requests.get(url, headers=headers)
+    resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 200:
         return resp.json()
     else:
@@ -108,7 +108,7 @@ def request(path): # To send a get request
 def stop_all_operations():
     setAirFan(100)
     setLeds(error_color)
-    request("pause")
+    request("job", params = {"command": "pause"})
     print("ALL OPERATION STOPPED")
 
 def door_open(): # return true or false
@@ -147,19 +147,13 @@ if __name__ == "__main__":
                 if temperature > max_temperature:
                     stop_all_operations()
 
-                if status["printing"] == True:
+                elif status["printing"] == True:
 
                     # Adapting Airfans
                     if temperature > optimal_temperature:
                         setAirFan(AIR_FAN_MAX)
                     else:
                         setAirFan(AIR_FAN_MIN)
-
-                    # Adapting leds
-                    if door_open():
-                        setLeds(open_color)
-                    else:
-                        setLeds(working_color)
 
                 elif status["cancelling"] == True or status["error"] == True:
                     setAirFan(100)
