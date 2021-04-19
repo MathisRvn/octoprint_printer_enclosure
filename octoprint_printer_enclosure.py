@@ -115,10 +115,7 @@ def get_status(): # get information from octoprint and return { operational, pau
         return None
 
 while 1:
-    for i in range(0, 100):
-        setAirFan(i)
-        time.sleep(0.5)
-    time.sleep(10)
+    setAirFan(100)
     
 
 if __name__ == "__main__":
