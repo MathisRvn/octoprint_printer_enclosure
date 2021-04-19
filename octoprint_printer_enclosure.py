@@ -101,6 +101,7 @@ def request(path, params = {}): # To send a get request
     headers = {'X-Api-Key': API_KEY}
     resp = requests.get(url, headers=headers, params=params)
     if resp.status_code == 200:
+        print(resp.json())
         return resp.json()
     else:
         return None
@@ -112,7 +113,7 @@ def stop_all_operations():
     print("ALL OPERATION STOPPED")
 
 def door_open(): # return true or false
-    pass
+    return False
 
 def get_status(): # get information from octoprint and return { operational, paused, printing, cancelling, pausing, error, ready }
     r = request('printer')
