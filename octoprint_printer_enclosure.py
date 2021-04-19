@@ -12,7 +12,7 @@ import sys
 import os
 import RPi.GPIO as GPIO
 import datetime
-
+import traceback
 
 from pathlib import Path
 dir_path = str(Path(__file__).parent.resolve())
@@ -205,14 +205,14 @@ def main ():
             time.sleep(0.5)
 
         except Exception:
-            pass
+            traceback.print_exc()
 
 
 def run ():
     try:
         main()
     except Exception:
-        pass
+        traceback.print_exc()
 
 
 if __name__ == "__main__":
