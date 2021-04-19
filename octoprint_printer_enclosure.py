@@ -85,7 +85,7 @@ def setLeds(color):
 
 def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
-    fan_out.ChangeDutyCycle(speed)
+    fan_out.ChangeDutyCycle(100-speed)
 
 def request(path): # To send a get request
     url = BASE_URL + 'api/' + path
@@ -114,6 +114,11 @@ def get_status(): # get information from octoprint and return { operational, pau
     else:
         return None
 
+while 1:
+    for i in range(0, 100):
+        setAirFan(i)
+        time.sleep(0.1)
+    
 
 if __name__ == "__main__":
 
