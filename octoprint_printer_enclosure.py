@@ -21,6 +21,9 @@ PIN_BLUE = 24
 FAN_PIN_IN = 20
 FAN_PIN_OUT = 21
 
+AIR_FAN_MAX = 100
+AIR_FAN_MIN = 0
+
 DHT11_PIN = 4
 
 # Setting up the connection with octoprint
@@ -74,8 +77,11 @@ blue_led.start(0)
 
 
 def readDht11():
-    (humidity, temperature) = Adafruit_DHT.read_retry(temperature_sensor, DHT11_PIN)
-    return (temperature, humidity)
+    try:
+        (humidity, temperature) = Adafruit_DHT.read_retry(temperature_sensor, DHT11_PIN)
+        return (temperature, humidity)
+    except Exception:
+        return (0, 0)
 
 def setLeds(color):
     print("COLOR : ", color)
@@ -85,7 +91,7 @@ def setLeds(color):
 
 def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
-    fan_out.ChangeDutyCycle(100-speed)
+    fan_out.ChangeDutyCycle(speed)
 
 def request(path): # To send a get request
     url = BASE_URL + 'api/' + path
@@ -143,9 +149,9 @@ if __name__ == "__main__":
 
                     # Adapting Airfans
                     if temperature > optimal_temperature:
-                        setAirFan(100)
+                        setAirFan(AIR_FAN_MAX)
                     else:
-                        setAirFan(30)
+                        setAirFan(AIR_FAN_MIN)
 
                     # Adapting leds
                     if door_open():
