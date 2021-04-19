@@ -14,8 +14,8 @@ import RPi.GPIO as GPIO
 
 # PIN configuration
 
-PIN_RED = 18
-PIN_GREEN = 23
+PIN_RED = 17
+PIN_GREEN = 22
 PIN_BLUE = 24
 
 FAN_PIN_IN = 20
@@ -113,9 +113,6 @@ def get_status(): # get information from octoprint and return { operational, pau
         return r["state"]["flags"]
     else:
         return None
-
-while 1:
-    setAirFan(100)
     
 
 if __name__ == "__main__":
