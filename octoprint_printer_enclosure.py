@@ -146,7 +146,6 @@ if __name__ == "__main__":
 
                 if temperature > max_temperature:
                     stop_all_operations()
-                    ok = False
 
                 if status["printing"] == True:
 
