@@ -96,7 +96,7 @@ def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
     fan_out.ChangeDutyCycle(speed)
 
-def request(path, params = {): # To send a get request
+def request(path, params = {}): # To send a get request
     url = BASE_URL + 'api/' + path
     headers = {'X-Api-Key': API_KEY}
     resp = requests.get(url, headers=headers, params=params)
