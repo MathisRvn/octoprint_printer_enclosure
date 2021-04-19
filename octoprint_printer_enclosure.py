@@ -21,6 +21,8 @@ PIN_BLUE = 24
 FAN_PIN_IN = 20
 FAN_PIN_OUT = 21
 
+DOOR_PIN = 19
+
 AIR_FAN_MAX = 100
 AIR_FAN_MIN = 0
 
@@ -34,10 +36,8 @@ BASE_URL = "http://192.168.0.18:80/"
 # From 0 to 100%
 starting_color = (0, 100, 0)
 working_color = (0, 0, 0)
-end_color = (100, 100, 100)
 open_color = (100, 100, 100)
 error_color = (100, 0, 0)
-system_error = (100, 0, 100)
 
 # Temperature configuration
 min_temperature = 30
@@ -73,8 +73,9 @@ GPIO.setup(PIN_BLUE, GPIO.OUT, initial=GPIO.LOW)
 blue_led = GPIO.PWM(PIN_BLUE,PWM_FREQ)
 blue_led.start(0)
 
-
-
+# setting up the endstop of the door
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(DOOR_PIN,GPIO.IN)
 
 def readDht11():
     try:
@@ -87,7 +88,6 @@ def readDht11():
         return (0, 0)
 
 def setLeds(color):
-    print("COLOR : ", color)
     red_led.ChangeDutyCycle(color[0])
     green_led.ChangeDutyCycle(color[1])
     blue_led.ChangeDutyCycle(color[2])
@@ -96,24 +96,28 @@ def setAirFan(speed):
     fan_in.ChangeDutyCycle(speed)
     fan_out.ChangeDutyCycle(speed)
 
-def request(path, params = {}): # To send a get request
+def request(path, json = {}, method='get'): # To send a get request
+
     url = BASE_URL + 'api/' + path
     headers = {'X-Api-Key': API_KEY}
-    resp = requests.get(url, headers=headers, params=params)
+    resp = None
+
+    if method == 'get':
+        resp = requests.get(url, headers=headers, json=json)
+    elif method == 'post':
+        resp = requests.post(url, headers=headers, json=json)
+
     if resp.status_code == 200:
         print(resp.json())
         return resp.json()
     else:
         return None
 
-def stop_all_operations():
-    setAirFan(100)
-    setLeds(error_color)
-    request("job", params = {"command": "pause", "action": "pause"})
-    print("ALL OPERATION STOPPED")
-
 def door_open(): # return true or false
-    return False
+    if GPIO.input(DOOR_PIN):
+        return False
+    else:
+        return True
 
 def get_status(): # get information from octoprint and return { operational, paused, printing, cancelling, pausing, error, ready }
     r = request('printer')
@@ -121,64 +125,75 @@ def get_status(): # get information from octoprint and return { operational, pau
         return r["state"]["flags"]
     else:
         return None
-    
 
-if __name__ == "__main__":
+
+def setAirfanUsingTemperature (temperature):
+    if temperature > optimal_temperature:
+        setAirFan(AIR_FAN_MAX)
+    else:
+        setAirFan(AIR_FAN_MIN)
+
+
+def main ():
 
     # Starting sequence
     setAirFan(100)
     setLeds(starting_color)
-    time.sleep(2)
-    setAirFan(0)
-    setLeds(working_color)
+    time.sleep(3)
 
-    ok = True
-    while(ok):
+    while(True):
 
-        (temperature, humidity) = readDht11()
-        
-        print("TEMPERATURE : " + str(temperature))
+        try:
 
-        if temperature != 0:
-
+            (temperature, humidity) = readDht11()
             status = get_status()
 
-            if status != None and status["operational"] == True:
+            if temperature == 0:
+                print("Error : cannot connect to DHT11")
+                setLeds(error_color)
 
-                if temperature > max_temperature:
-                    stop_all_operations()
+            elif status == None or status["operational"] != True:
+                print("Error : cannot connect to Octoprint")
+                setLeds(error_color)
 
-                elif status["printing"] == True:
+            elif temperature > max_temperature:
+                print("Error: max temperature reached")
+                setLeds(error_color)
+                setAirFan(AIR_FAN_MAX)
+                request("job", json = {"command": "pause", "action": "pause"}, method='post')
 
-                    # Adapting Airfans
-                    if temperature > optimal_temperature:
-                        setAirFan(AIR_FAN_MAX)
-                    else:
-                        setAirFan(AIR_FAN_MIN)
-
-                elif status["cancelling"] == True or status["error"] == True:
-                    setAirFan(100)
-                    if door_open():
-                        setLeds(open_color)
-                    else:
-                        setLeds(error_color)
-
-                else:
-
-                    setAirFan(0)
-
-                    if door_open():
-                        setLeds(open_color)
-                    else:
-                        setLeds(working_color)
             else:
 
-                setLeds(error_color)
-                print("Error : cannot cant connect to octoprint. Check if your printer is on.")
+                if door_open():
+                    setAirfanUsingTemperature (temperature)
+                    setLeds(open_color)
 
-        else:
+                elif status['ready'] == True:
+                    setAirFan(AIR_FAN_MAX)
+                    setLeds(starting_color)
 
-            setLeds(error_color)
-            print("Error : cannot read dht11")
+                elif status["cancelling"] == True or status["error"] == True:
+                    print("Problem with the printer : status = cancelling ou status == error")
+                    setAirFan(AIR_FAN_MAX)
+                    setLeds(error_color)
 
-        time.sleep(1)
+                else:
+                    setAirfanUsingTemperature (temperature)
+                    setLeds(working_color)
+
+            time.sleep(0.5)
+
+        except Exception:
+            pass
+
+
+def run ():
+    try:
+        main()
+    except Exception:
+        pass
+
+
+if __name__ == "__main__":
+    while 1:
+        run()
