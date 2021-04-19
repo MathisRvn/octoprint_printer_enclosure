@@ -91,8 +91,6 @@ def request(path): # To send a get request
     url = BASE_URL + 'api/' + path
     headers = {'X-Api-Key': API_KEY}
     resp = requests.get(url, headers=headers)
-    print(url)
-    print(resp.text)
     if resp.status_code == 200:
         return resp.json()
     else:
@@ -128,6 +126,8 @@ if __name__ == "__main__":
     while(ok):
 
         (temperature, humidity) = readDht11()
+        
+        print("TEMPERATURE : " + str(temperature))
 
         if temperature != 0:
 
