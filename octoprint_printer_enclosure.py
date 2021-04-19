@@ -132,11 +132,8 @@ if __name__ == "__main__":
         if temperature != 0:
 
             status = get_status()
-            print(status)
 
             if status != None and status["operational"] == True:
-
-                print(temperature, humidity, status)
 
                 if temperature > max_temperature:
                     stop_all_operations()
