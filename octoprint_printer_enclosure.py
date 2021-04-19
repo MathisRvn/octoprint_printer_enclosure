@@ -79,7 +79,10 @@ blue_led.start(0)
 def readDht11():
     try:
         (humidity, temperature) = Adafruit_DHT.read_retry(temperature_sensor, DHT11_PIN)
-        return (temperature, humidity)
+        if temperature != 0:
+            return (temperature, humidity)
+        else:
+            raise Exception
     except Exception:
         return (0, 0)
 
