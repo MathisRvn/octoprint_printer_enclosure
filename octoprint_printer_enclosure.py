@@ -161,51 +161,46 @@ def main ():
 
     while(True):
 
-        try:
+        (temperature, humidity) = readDht11()
+        status = get_status()
+        door_status = door_open()
 
-            (temperature, humidity) = readDht11()
-            status = get_status()
-            door_status = door_open()
+        print("temperature : " + str(temperature) + '°C    door : ' + str(door_status))
 
-            print("temperature : " + str(temperature) + '°C    door : ' + str(door_status))
+        if temperature == 0:
+            error("Error : cannot connect to DHT11")
+            setLeds(error_color)
 
-            if temperature == 0:
-                error("Error : cannot connect to DHT11")
-                setLeds(error_color)
+        elif status == None or status["operational"] != True:
+            error("Error : cannot connect to Octoprint")
+            setLeds(error_color)
 
-            elif status == None or status["operational"] != True:
-                error("Error : cannot connect to Octoprint")
-                setLeds(error_color)
+        elif temperature > max_temperature:
+            error("Error: max temperature reached")
+            setLeds(error_color)
+            setAirFan(AIR_FAN_MAX)
+            request("job", json = {"command": "pause", "action": "pause"}, method='post')
 
-            elif temperature > max_temperature:
-                error("Error: max temperature reached")
-                setLeds(error_color)
+        else:
+
+            if door_status:
+                setAirfanUsingTemperature (temperature)
+                setLeds(open_color)
+
+            elif status['ready'] == True:
                 setAirFan(AIR_FAN_MAX)
-                request("job", json = {"command": "pause", "action": "pause"}, method='post')
+                setLeds(starting_color)
+
+            elif status["cancelling"] == True or status["error"] == True:
+                error("Problem with the printer : status = cancelling ou status == error")
+                setAirFan(AIR_FAN_MAX)
+                setLeds(error_color)
 
             else:
+                setAirfanUsingTemperature (temperature)
+                setLeds(working_color)
 
-                if door_status:
-                    setAirfanUsingTemperature (temperature)
-                    setLeds(open_color)
-
-                elif status['ready'] == True:
-                    setAirFan(AIR_FAN_MAX)
-                    setLeds(starting_color)
-
-                elif status["cancelling"] == True or status["error"] == True:
-                    error("Problem with the printer : status = cancelling ou status == error")
-                    setAirFan(AIR_FAN_MAX)
-                    setLeds(error_color)
-
-                else:
-                    setAirfanUsingTemperature (temperature)
-                    setLeds(working_color)
-
-            time.sleep(0.5)
-
-        except:
-            traceback.print_exc()
+        time.sleep(0.5)
 
 if __name__ == "__main__":
     main()
