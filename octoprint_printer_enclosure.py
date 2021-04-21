@@ -186,14 +186,14 @@ def main ():
                     setAirfanUsingTemperature (temperature)
                     setLeds(open_color)
 
+                elif status["pausing"] == True or status["paused"] == True or status["cancelling"] == True or status["error"] == True:
+                    error("Problem with the printer : status = paused ou status = cancelling ou status == error")
+                    setAirFan(AIR_FAN_MAX)
+                    setLeds(error_color)
+
                 elif status['ready'] == True:
                     setAirFan(AIR_FAN_MAX)
                     setLeds(starting_color)
-
-                elif status["paused"] == True or status["cancelling"] == True or status["error"] == True:
-                    error("Problem with the printer : status = cancelling ou status == error")
-                    setAirFan(AIR_FAN_MAX)
-                    setLeds(error_color)
 
                 else:
                     setAirfanUsingTemperature (temperature)
