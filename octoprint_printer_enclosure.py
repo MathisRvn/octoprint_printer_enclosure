@@ -149,6 +149,13 @@ def error (err):
     f.write(txt+"\n")
     f.close()
 
+
+def error_action ():
+    setLeds(error_color)
+    setAirFan(AIR_FAN_MAX)
+    request("job", json = {"command": "pause", "action": "pause"}, method='post')
+
+
 def main ():
 
     # Starting sequence
@@ -168,7 +175,7 @@ def main ():
 
             if temperature == 0:
                 error("Error : cannot connect to DHT11")
-                setLeds(error_color)
+                error_action()
 
             elif status == None or status["operational"] != True:
                 error("Error : cannot connect to Octoprint")
@@ -176,9 +183,7 @@ def main ():
 
             elif temperature > max_temperature:
                 error("Error: max temperature reached")
-                setLeds(error_color)
-                setAirFan(AIR_FAN_MAX)
-                request("job", json = {"command": "pause", "action": "pause"}, method='post')
+                error_action()
 
             else:
 
