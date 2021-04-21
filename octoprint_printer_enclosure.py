@@ -24,8 +24,7 @@ PIN_RED = 17
 PIN_GREEN = 22
 PIN_BLUE = 24
 
-FAN_PIN_IN = 20
-FAN_PIN_OUT = 21
+FAN_PIN = 21
 
 DOOR_PIN = 19
 
@@ -52,20 +51,20 @@ max_temperature = 50
 
 temperature_sensor = Adafruit_DHT.DHT11 # Setting up dht11 sensor
 
-# Setting up all pwm output : 2 for the fans and 3 for the 3 colors of the leds
+# Setting up all pwm output : 1 for the fan and 3 for the 3 colors of the leds
 
 PWM_FREQ = 200
+
+
+GPIO.cleanup()
+
 
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BCM)
 
-GPIO.setup(FAN_PIN_IN, GPIO.OUT, initial=GPIO.LOW)
-fan_in = GPIO.PWM(FAN_PIN_IN,PWM_FREQ)
-fan_in.start(0)
-
-GPIO.setup(FAN_PIN_OUT, GPIO.OUT, initial=GPIO.LOW)
-fan_out = GPIO.PWM(FAN_PIN_OUT,PWM_FREQ)
-fan_out.start(0)
+GPIO.setup(FAN_PIN, GPIO.OUT, initial=GPIO.LOW)
+fan = GPIO.PWM(FAN_PIN,PWM_FREQ)
+fan.start(0)
 
 GPIO.setup(PIN_RED, GPIO.OUT, initial=GPIO.LOW)
 red_led = GPIO.PWM(PIN_RED,PWM_FREQ)
@@ -80,7 +79,6 @@ blue_led = GPIO.PWM(PIN_BLUE,PWM_FREQ)
 blue_led.start(0)
 
 # setting up the endstop of the door
-GPIO.setmode(GPIO.BCM)
 GPIO.setup(DOOR_PIN,GPIO.IN)
 
 
@@ -102,8 +100,7 @@ def setLeds(color):
 
 
 def setAirFan(speed):
-    fan_in.ChangeDutyCycle(speed)
-    fan_out.ChangeDutyCycle(speed)
+    fan.ChangeDutyCycle(speed)
 
 
 def request(path, json = {}, method='get'): # To send a get request
