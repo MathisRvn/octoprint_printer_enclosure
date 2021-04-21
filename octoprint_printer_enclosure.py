@@ -204,17 +204,8 @@ def main ():
 
             time.sleep(0.5)
 
-        except Exception:
+        except:
             traceback.print_exc()
 
-
-def run ():
-    try:
-        main()
-    except Exception:
-        traceback.print_exc()
-
-
 if __name__ == "__main__":
-    while 1:
-        run()
+    main()
