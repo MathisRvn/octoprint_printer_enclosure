@@ -143,7 +143,7 @@ def setAirfanUsingTemperature (temperature):
 
 def error (err):
     (temperature, humidity) = readDht11()
-    txt = str(datetime.datetime.now()) + '     ' + str(temperature) + '°C      Door opened ? ' + door_open() + '     error : ' + err
+    txt = str(datetime.datetime.now()) + '     ' + str(temperature) + '°C      Door opened ? ' + str(door_open()) + '     error : ' + err
     print(txt)
     f = open(dir_path + '/log.txt', 'a')
     f.write(txt+"\n")
