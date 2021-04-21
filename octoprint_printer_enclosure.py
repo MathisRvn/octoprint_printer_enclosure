@@ -167,7 +167,7 @@ def main ():
             status = get_status()
             door_status = door_open()
 
-            print("temperature : " + temperature + '°C    door : ' + door_status)
+            print("temperature : " + str(temperature) + '°C    door : ' + str(door_status))
 
             if temperature == 0:
                 error("Error : cannot connect to DHT11")
